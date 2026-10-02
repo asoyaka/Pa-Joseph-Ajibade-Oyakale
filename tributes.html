@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Tributes and memories shared in honour of Pa Joseph Ajibade Oyakale.">
+<title>Tributes & Memories | Pa Joseph Ajibade Oyakale</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Georgia,serif;background:#f7f3ec;color:#332b25;line-height:1.7}
+.hero{padding:48px 20px;text-align:center;background:linear-gradient(135deg,#4a4037,#817363);color:white}.hero h1{font-size:clamp(2rem,5vw,3.2rem);margin:8px 0}.hero p{margin:4px}
+.container{max-width:900px;margin:auto;padding:25px 20px}.card{background:white;margin:20px 0;padding:24px;border-radius:14px;box-shadow:0 5px 22px #00000012}
+.tribute{border-top:4px solid #8b765f}.tribute h2{color:#5c4d40;margin-top:0}.meta{font:14px Arial,sans-serif;color:#776b61;margin-bottom:15px}
+.button{display:inline-block;padding:12px 20px;border-radius:30px;background:#5c4d40;color:white;text-decoration:none;margin:5px;font-family:Arial,sans-serif}
+.center{text-align:center}.loading{text-align:center;padding:35px}.empty{text-align:center;padding:35px;color:#6b625a}
+img{max-width:100%;height:auto;border-radius:10px;margin:10px 0}
+</style>
+</head>
+<body>
+<section class="hero">
+<div>🕊️</div>
+<h1>Tributes & Memories</h1>
+<p>In loving memory of <strong>Pa Joseph Ajibade Oyakale</strong></p>
+<p>1931 – 24th September 2026</p>
+</section>
+<main class="container">
+<div class="card center">
+<p>These are tributes and memories shared by people who knew, loved or were touched by Baba's life.</p>
+<a class="button" href="index.html">← Back to Memorial</a>
+<a class="button" href="https://github.com/asoyaka/Pa-Joseph-Ajibade-Oyakale/issues/new?title=Tribute%20to%20Pa%20Joseph%20Ajibade%20Oyakale&amp;body=Your%20name%3A%0A%0AYour%20relationship%20to%20Baba%3A%0A%0AYour%20tribute%20or%20memory%3A%0A%0APhotograph%3A%20You%20may%20attach%20a%20photograph%20to%20your%20tribute.">💬 Share Your Tribute</a>
+</div>
+<div id="tributes"><div class="loading">Loading tributes and memories…</div></div>
+</main>
+<footer class="hero" style="padding:30px 20px"><p>🕊️ Forever loved • Forever remembered • Forever cherished</p></footer>
+<script>
+const API='https://api.github.com/repos/asoyaka/Pa-Joseph-Ajibade-Oyakale/issues?state=all&per_page=100';
+const box=document.getElementById('tributes');
+
+function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
+function renderBody(body){
+  let s=escapeHtml(body||'');
+  const images=[];
+  s=s.replace(/!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)/g,(m,a,u)=>{images.push('<img src="'+u+'" alt="'+a+'">');return '';});
+  s=s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,'$1');
+  s=s.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+  s=s.replace(/\n/g,'<br>');
+  return s+(images.length?'<div>'+images.join('')+'</div>':'');
+}
+async function loadTributes(){
+  try{
+    const res=await fetch(API,{headers:{Accept:'application/vnd.github+json'}});
+    if(!res.ok) throw new Error('GitHub API error');
+    const issues=await res.json();
+    const tributes=issues.filter(i=>!i.pull_request && /tribute/i.test(i.title));
+    if(!tributes.length){
+      box.innerHTML='<div class="card empty"><h2>No tributes have been shared yet.</h2><p>Be the first to share a memory, story or photograph of Baba.</p></div>';
+      return;
+    }
+    box.innerHTML=tributes.map(i=>{
+      const date=new Date(i.created_at).toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
+      return '<article class="card tribute"><h2>'+escapeHtml(i.title)+'</h2><div class="meta">Shared on '+date+'</div><div>'+renderBody(i.body)+'</div></article>';
+    }).join('');
+  }catch(e){
+    box.innerHTML='<div class="card empty"><h2>Tributes are temporarily unavailable.</h2><p>Please refresh the page in a moment.</p></div>';
+  }
+}
+loadTributes();
+</script>
+</body>
+</html>
